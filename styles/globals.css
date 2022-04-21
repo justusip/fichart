@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+    font-family: 'PlexSans';
+    src: url('https://fonts.gstatic.com/s/ibmplexsans/v13/zYX9KVElMYYaJe8bpLHnCwDKjSL9AIFsdP3pBms.woff2');
+}
+
+div {
+    font-family: "PlexSans", sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    user-select: none;
+    margin: 0;
+    overflow: hidden;
+}
+
+.owo {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+}
+
+input:focus {
+    outline: none;
+}
