@@ -5,6 +5,7 @@
 <div align="center">
 A clean, lightweight, responsive, and extensible React financial chart library optimized for high-frequency trading
 
-![quote application example](screenshot.png)
+---
 
+<img src="screenshot.png" alt="logo"/>
 </div>
