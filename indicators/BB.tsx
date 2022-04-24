@@ -4,7 +4,7 @@ import React from "react";
 import Option from "./Option";
 import Context from "./Context";
 
-export default class SMA extends Indicator {
+export default class BB extends Indicator {
     constructor() {
         super(
             "Bollinger Bands",
