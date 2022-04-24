@@ -9,7 +9,7 @@ A clean, lightweight, responsive, and extensible React financial chart library o
 
 <img src="screenshot.png" alt="logo"/>
 
-[Working Demo](https://vercel.com/moougi/fichart)
+[Working Demo](https://fichart.vercel.app)
 
 </div>
 
