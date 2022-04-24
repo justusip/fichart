@@ -5,5 +5,4 @@ export default interface Interval {
     low: number;
     close: number;
     volume: number;
-    indicators: { [id: string]: number | null };
 }

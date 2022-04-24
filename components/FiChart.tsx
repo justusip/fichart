@@ -9,6 +9,7 @@ import IndicatorPanel from "../components/IndicatorPanel";
 const FiChart = (props: {
     classNames?: string,
     data: Interval[],
+    timeScales?: string[],
     onTimeScaleChange?: (precision: string) => void
 }) => {
     const [ready, setReady] = useState(false);
@@ -16,8 +17,8 @@ const FiChart = (props: {
         setReady(true);
     }, []);
 
-    const precisions = ["1M", "5M", "1H", "1D", "1W"];
-    const [timeScale, setTimeScale] = useState(precisions[0]);
+    const timeScales = props.timeScales || ["1M", "5M", "1H", "1D", "1W"];
+    const [timeScale, setTimeScale] = useState(timeScales[0]);
 
     const [indiPanelToggled, setIndiPanelToggled] = useState(true);
 
@@ -30,8 +31,8 @@ const FiChart = (props: {
                    data={props.data}/>
             <div className={"bg-[#262a30] flex gap border-t border-gray-500"}>
                 {
-                    precisions.map((p, i) => {
-                        const disabled = p !== precisions[0];
+                    timeScales.map((p, i) => {
+                        const disabled = p !== timeScales[0];
                         return <div key={i}
                                     className={cx(
                                         "text-xs py-2 px-4",
