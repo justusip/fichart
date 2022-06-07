@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useState} from "react";
+import React, {useCallback, useEffect, useMemo, useState} from "react";
 import Interval from "../misc/Interval";
 import moment from "moment";
 import {useDispatch, useSelector} from "react-redux";
@@ -7,9 +7,11 @@ import AllIndicators from "../indicators/AllIndicators";
 import Context from "../indicators/Context";
 import {useResizeDetector} from "react-resize-detector";
 
-export default function Chart(props: {
+export default function ChartCanvas(props: {
     className: string,
-    data: Interval[]
+    data: Interval[],
+    timeStep: number,
+    timePerGrid: number
 }) {
     const indiData: IndicatorData[] = useSelector((state: any) => state.indicators.value);
     const dispatch = useDispatch();
@@ -27,16 +29,17 @@ export default function Chart(props: {
     let [mouseX, setMouseX] = useState(0);
     let [mouseY, setMouseY] = useState(0);
 
-    let maxTimeRange = 30 * 24 * 60 * 60; //1 month
-    let minTimeRange = 60 * 60;
+    let maxTimeRange = 6 * 30 * 24 * 60 * 60; //1 month
+    let minTimeRange = 7 * 24 * 60 * 60;
 
-    let [boundLeft, setBoundLeft] = useState(1611883800);
-    let [boundRight, setBoundRight] = useState(boundLeft + 4 * 60 * 60);
+    let [boundLeft, setBoundLeft] = useState(props.data[0].timestamp - 2 * props.timeStep);
+    let [boundRight, setBoundRight] = useState(boundLeft + 102 * props.timeStep);
     let [boundBottom, setBoundBottom] = useState(10);
     let [boundTop, setBoundTop] = useState(20);
 
-    let boundTimeRange = boundRight - boundLeft;
-    let boundPriceRange = boundTop - boundBottom;
+
+    let boundTimeRange = useMemo(() => boundRight - boundLeft, [boundLeft, boundRight]);
+    let boundPriceRange = useMemo(() => boundTop - boundBottom, [boundBottom, boundTop]);
 
     let [boundVolTop, setBoundVolTop] = useState(100000000);
 
@@ -53,7 +56,7 @@ export default function Chart(props: {
         background: "#2d2d2d",
         grid: "#404040",
         divisor: "#777",
-        cursorHighlight: "#ffffff33",
+        cursorHighlight: "#ffffff44",
         bodyRisen: "#51ab82",
         bodyDropped: "#8a3334",
         text: "#777"
@@ -61,51 +64,18 @@ export default function Chart(props: {
         // overview: "#777" // When the graph is shrunk horizontally to extreme and the candle bodies are not visible
     };
 
-    // +-------------------------------------------------------------------------+
-    // |                                    |                                    |
-    // |                                    |                                    |
-    // |                                    | [mouseY, ctx.fillRect(...)]        |
-    // |    [ctx.fillRect(...) / mouseX]    |                                    |
-    // |             xToTime(x)             |                                    |
-    // |------------------------------------+------------------------------------|
-    // |                                    |                                    |
-    // |                                    |                                    |
-    // |                                    | yToPrice(y)                        |
-    // |                                    |                                    |
-    // |                                    |                                    |
-    // +-------------------------------------------------------------------------+
-
-    const drawText = (
+    const drawCtrText = (
         ctx: CanvasRenderingContext2D,
         msg: string,
-        x: number,
-        y: number,
+        centerX: number,
+        centerY: number,
         colour: string,
     ) => {
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillStyle = colour;
         ctx.font = `${12 * devicePixelRatio}px PlexSans`;
-        ctx.fillText(msg, x, cvsHeight - y);
-    };
-    const drawTextbox = (
-        ctx: CanvasRenderingContext2D,
-        msg: string,
-        x: number,
-        y: number,
-        colour: string,
-        bg: string
-    ) => {
-        const padding = 16 * devicePixelRatio;
-
-        // Draws background
-        ctx.fillStyle = bg;
-        const rectWidth = measureTextWidth(ctx, msg) + padding;
-        const rectHeight = measureTextHeight(ctx, msg) + padding;
-        ctx.fillRect(x - (rectWidth / 2), cvsHeight - y - (rectHeight / 2), rectWidth, rectHeight);
-
-        // Draws text
-        drawText(ctx, msg, x, y, colour);
+        ctx.fillText(msg, centerX, cvsHeight - centerY);
     };
     const measureText = (ctx: CanvasRenderingContext2D, msg: string): TextMetrics => {
         ctx.font = `${12 * devicePixelRatio}px PlexSans`;
@@ -123,40 +93,38 @@ export default function Chart(props: {
     };
 
     let volumeHeight = 100;
-    let bottomHeight = 0;
-    let chartHeight = cvsHeight - volumeHeight - bottomHeight;
-    let rightWidth = 60;
-    let chartWidth = cvsWidth - rightWidth;
+    let bottomValHeight = 0;
+    let chartHeight = cvsHeight - volumeHeight - bottomValHeight;
+    let rightValWidth = 60;
+    let chartWidth = cvsWidth - rightValWidth;
 
-    const timeStep = 1 * 60;
+    // const props.timeStep = 24 * 60 * 60;
     const xToTime = (x: number) => x / chartWidth * boundTimeRange + boundLeft;
     const timeToX = (time: number) => (time - boundLeft) / boundTimeRange * chartWidth;
 
-    const priceStep = 1.0;
+    // const priceStep = 1.0;
     const yToPrice = (y: number) => y / cvsHeight * boundPriceRange + boundBottom;
-    const priceToY = (price: number) => (price - boundBottom) / boundPriceRange * chartHeight + volumeHeight + bottomHeight;
+    const priceToY = (price: number) => (price - boundBottom) / boundPriceRange * chartHeight + volumeHeight + bottomValHeight;
 
     const timesPerGridline = [10 * 60, 30 * 60, 60 * 60];
-    const timePerGridline = 10 * 60;
-    const pricePerGridline = 1;
+    const timePerGridline = props.timeStep * 10;
+    const pricePerGridline = 10;
 
-    const findData = (time: number) => props.data.find(interval => interval.time === time); //TODO optimize
+    const findData = (time: number) => props.data.find(interval => interval.timestamp === time); //TODO optimize
     const rectPadding = 2;
 
     const prevStep = (val: number, step: number) => Math.floor(val / step) * step;
     const nextStep = (val: number, step: number) => Math.ceil(val / step) * step;
 
-    useEffect(() => {
-    }, []);
     const draw = () => {
         const ctx = ref.current.getContext("2d");
         ctx.fillStyle = s.background;
         ctx.fillRect(0, 0, cvsWidth, cvsHeight);
 
-        bottomHeight = measureTextHeight(ctx, "1.234567890") + 16 * devicePixelRatio;
-        rightWidth = measureTextWidth(ctx, "14.00") + 16 * devicePixelRatio;
-        chartHeight = cvsHeight - volumeHeight - bottomHeight;
-        chartWidth = cvsWidth - rightWidth;
+        bottomValHeight = measureTextHeight(ctx, "1.234567890") + 16 * devicePixelRatio;
+        rightValWidth = measureTextWidth(ctx, "140.00") + 16 * devicePixelRatio;
+        chartHeight = cvsHeight - volumeHeight - bottomValHeight;
+        chartWidth = cvsWidth - rightValWidth;
 
         // Finding boundaries
         //TODO
@@ -189,20 +157,21 @@ export default function Chart(props: {
 
         // Draw candlesticks and volume bars
         for (
-            let time = prevStep(boundLeft, timeStep);
-            time <= nextStep(boundRight, timeStep);
-            time += timeStep
+            let time = prevStep(boundLeft, props.timeStep);
+            time <= nextStep(boundRight, props.timeStep);
+            time += props.timeStep
         ) {
             const interval = findData(time);
+            console.log(moment(time));
 
             const segLeft = timeToX(time);
-            const segRight = timeToX(time + timeStep);
+            const segRight = timeToX(time + props.timeStep);
             const segWidth = segRight - segLeft;
             const segCenter = (segLeft + segRight) / 2;
 
             if (!interval) {
                 ctx.fillStyle = "#222";
-                ctx.fillRect(segLeft, 0, segRight - segLeft, cvsHeight - bottomHeight);
+                ctx.fillRect(segLeft, 0, segRight - segLeft, cvsHeight - bottomValHeight);
                 continue;
             }
 
@@ -230,8 +199,8 @@ export default function Chart(props: {
             }
 
             // Draw Volume
-            const volTop = interval.volume / boundVolTop * volumeHeight + bottomHeight;
-            const volBottom = bottomHeight;
+            const volTop = interval.volume / boundVolTop * volumeHeight + bottomValHeight;
+            const volBottom = bottomValHeight;
             ctx.fillRect(rectLeft, cvsHeight - volTop, Math.max(rectWidth, 1), volTop - volBottom);
         }
 
@@ -241,9 +210,9 @@ export default function Chart(props: {
                     ctx.strokeStyle = colour;
                     let prevPos: { x: number, y: number } | null = null;
                     for (
-                        let time = prevStep(boundLeft, timeStep);
-                        time <= nextStep(boundRight, timeStep);
-                        time += timeStep
+                        let time = prevStep(boundLeft, props.timeStep);
+                        time <= nextStep(boundRight, props.timeStep);
+                        time += props.timeStep
                     ) {
                         const entry = data.find(o => o.time === time);
                         if (!entry)
@@ -253,7 +222,7 @@ export default function Chart(props: {
                             continue;
 
                         const segLeft = timeToX(time);
-                        const segRight = timeToX(time + timeStep);
+                        const segRight = timeToX(time + props.timeStep);
                         const segCenter = (segLeft + segRight) / 2;
 
                         const x = segCenter;
@@ -290,7 +259,7 @@ export default function Chart(props: {
             ) {
                 const y = priceToY(price);
                 const val = price.toFixed(2);
-                drawText(ctx, val, cvsWidth - (rightWidth / 2), y, s.text);
+                drawCtrText(ctx, val, cvsWidth - (rightValWidth / 2), y, s.text);
             }
 
             //Times
@@ -299,9 +268,9 @@ export default function Chart(props: {
                 time <= prevStep(boundRight, timePerGridline);
                 time += timePerGridline
             ) {
-                const x = timeToX(time + (timeStep / 2));
-                const val = moment(time * 1000).format("HH:mm");
-                drawText(ctx, val, x, bottomHeight / 2, s.text);
+                const x = timeToX(time + (props.timeStep / 2));
+                const val = moment(time * 1000).format("DD/MM/YYYY");
+                drawCtrText(ctx, val, x, bottomValHeight / 2, s.text);
             }
 
             ctx.fillStyle = s.divisor;
@@ -311,31 +280,50 @@ export default function Chart(props: {
         }
 
         // Draw Cursor
-        if (showCursor && mouseX < chartWidth && mouseY < cvsHeight - bottomHeight) {
+        if (showCursor && mouseX < chartWidth && mouseY < cvsHeight - bottomValHeight) {
             const price = yToPrice(cvsHeight - mouseY);
-            const time = prevStep(xToTime(mouseX), timeStep);
+            const time = prevStep(xToTime(mouseX), props.timeStep);
 
-            // Horizontal Label
-            const priceLblText = price.toFixed(2);
-            const priceLblCenter = (chartWidth + cvsWidth) / 2;
-            drawTextbox(ctx, priceLblText, priceLblCenter, cvsHeight - mouseY, "#fff", "#777");
-
-            // Horizontal Line
-            ctx.fillStyle = s.cursorHighlight;
+            // Cursor Horizontal Line
+            ctx.fillStyle = "#fff";
             ctx.fillRect(0, mouseY, chartWidth, 1);
 
-            const rectLeft = timeToX(time);
-            const rectRight = timeToX(time + timeStep);
-            const rectWidth = rectRight - rectLeft;
-            const rectCenter = (rectLeft + rectRight) / 2;
+            // Vertical Axis Value (Cursor Pointed Price)
+            const priceLblCenter = (chartWidth + cvsWidth) / 2;
+            const priceLblText = price.toFixed(2);
+            const priceLblBgHeight = measureTextHeight(ctx, priceLblText) + 16 * devicePixelRatio;
+            ctx.fillStyle = "#fff";
+            ctx.fillRect(cvsWidth - rightValWidth, mouseY - (priceLblBgHeight / 2), rightValWidth, priceLblBgHeight);
+            ctx.beginPath();
+            ctx.moveTo(cvsWidth - rightValWidth - (10 * devicePixelRatio), mouseY);
+            ctx.lineTo(cvsWidth - rightValWidth + 1, mouseY - (priceLblBgHeight / 2));
+            ctx.lineTo(cvsWidth - rightValWidth + 1, mouseY + (priceLblBgHeight / 2));
+            ctx.fill();
+            drawCtrText(ctx, priceLblText, priceLblCenter, cvsHeight - mouseY, "#000");
 
-            // Vertical Line
-            ctx.fillStyle = s.cursorHighlight;
-            ctx.fillRect(rectLeft, 0, rectWidth, cvsHeight - bottomHeight);
+            // Vertical Bar Highlight
+            const vertHighlightLeft = timeToX(time);
+            const vertHighlightRight = timeToX(time + props.timeStep);
+            const vertHighlightWidth = vertHighlightRight - vertHighlightLeft;
+            const vertHighlightCenter = (vertHighlightLeft + vertHighlightRight) / 2;
+            ctx.fillStyle = "#ffffff22";
+            ctx.fillRect(vertHighlightLeft, 0, vertHighlightWidth, cvsHeight - bottomValHeight);
 
-            // Vertical Label
-            const timeVal = moment(time * 1000).format("DD/MM/YYYY HH:mm:ss");
-            drawTextbox(ctx, timeVal, rectCenter, bottomHeight / 2, "#fff", "#777");
+            // Cursor Vertical Line
+            ctx.fillStyle = "#fff";
+            ctx.fillRect(mouseX, 0, 1, cvsHeight);
+
+            // Horizontal Axis Value (Cursor Pointed Time)
+            const bottomLblVal = moment(time * 1000).format("DD/MM/YYYY HH:mm:ss");
+            const bottomLblBgWidth = measureTextWidth(ctx, bottomLblVal) + 16 * devicePixelRatio;
+            ctx.fillStyle = "#fff";
+            ctx.fillRect(vertHighlightCenter - (bottomLblBgWidth / 2), cvsHeight - bottomValHeight, bottomLblBgWidth, bottomValHeight);
+            ctx.beginPath();
+            ctx.moveTo(vertHighlightCenter, cvsHeight - bottomValHeight - (10 * devicePixelRatio));
+            ctx.lineTo(vertHighlightCenter - (16 * devicePixelRatio), cvsHeight - bottomValHeight);
+            ctx.lineTo(vertHighlightCenter + (16 * devicePixelRatio), cvsHeight - bottomValHeight);
+            ctx.fill();
+            drawCtrText(ctx, bottomLblVal, vertHighlightCenter, bottomValHeight / 2, "#000");
         }
     };
 

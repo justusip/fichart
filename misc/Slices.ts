@@ -15,7 +15,7 @@ const useSlice = <T>(name: string, initialVal: T) =>
         },
     });
 
-const scale = useSlice("scale", "1M");
+const scale = useSlice("scale", "1D");
 export const setScale = scale.actions.set;
 
 const indicators = useSlice<IndicatorData[]>("indicators", [

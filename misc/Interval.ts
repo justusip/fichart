@@ -1,5 +1,5 @@
 export default interface Interval {
-    time: number;
+    timestamp: number;
     open: number;
     high: number;
     low: number;

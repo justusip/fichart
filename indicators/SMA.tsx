@@ -38,10 +38,10 @@ export default class SMA extends Indicator {
         for (const interval of intervals) {
             samples.push(interval.close);
             if (samples.length <= width) {
-                data.push({time: interval.time, price: null});
+                data.push({time: interval.timestamp, price: null});
             } else {
                 samples.shift();
-                data.push({time: interval.time, price: samples.reduce((a, n) => a + n) / width});
+                data.push({time: interval.timestamp, price: samples.reduce((a, n) => a + n) / width});
 
             }
         }

@@ -1,10 +1,11 @@
 import Interval from "../misc/Interval";
-import Chart from "../components/Chart";
+import ChartCanvas from "./ChartCanvas";
 import cx from "classnames";
 import {useEffect, useState} from "react";
 import {MdQueryStats, MdStackedLineChart} from "react-icons/md";
-import VerticalToggle from "../components/VerticalToggle";
+import VerticalSideBtn from "../components/VerticalToggle";
 import IndicatorPanel from "../components/IndicatorPanel";
+import DefinedIntervals from "../misc/DefinedIntervals";
 
 const FiChart = (props: {
     classNames?: string,
@@ -18,7 +19,18 @@ const FiChart = (props: {
     }, []);
 
     const timeScales = props.timeScales || ["1M", "5M", "1H", "1D", "1W"];
-    const [timeScale, setTimeScale] = useState(timeScales[0]);
+    const [timeScale, setTimeScale] = useState("1D");
+    const timeStep = DefinedIntervals[timeScale];
+
+    const timesPerGrid: { [key: string]: number } = {
+        "1M": 60 * 60,
+        "5M": 60 * 60,
+        "1H": 24 * 60 * 60,
+        "4H": 24 * 60 * 60,
+        "1D": 7 * 24 * 60 * 60,
+        "1W": 30 * 24 * 60 * 60,
+    };
+    const timePerGrid: number = timesPerGrid[timeScale];
 
     const [indiPanelToggled, setIndiPanelToggled] = useState(true);
 
@@ -27,8 +39,10 @@ const FiChart = (props: {
             <div className={"px-4 py-2 text-xs border-b border-gray-700"}>
                 FiChart Demo
             </div>
-            <Chart className={"flex-1 h-0"}
-                   data={props.data}/>
+            <ChartCanvas className={"flex-1 h-0"}
+                         data={props.data}
+                         timeStep={timeStep}
+                         timePerGrid={timePerGrid}/>
             <div className={"bg-[#262a30] flex gap border-t border-gray-500"}>
                 {
                     timeScales.map((p, i) => {
@@ -47,23 +61,26 @@ const FiChart = (props: {
                         >{p}</div>;
                     })
                 }
+                {
+                    <div className={"ml-auto text-xs py-2 px-4"}>EST (UTC-5)</div>
+                }
             </div>
         </div>
         {indiPanelToggled && <IndicatorPanel/>}
         <div className={"bg-[#262a30] text-xs border-l border-gray-700"}>
-            <VerticalToggle
+            <VerticalSideBtn
                 isToggled={indiPanelToggled}
                 onToggle={() => setIndiPanelToggled(!indiPanelToggled)}
                 icon={<MdStackedLineChart/>}>
                 Indicators
-            </VerticalToggle>
-            <VerticalToggle
+            </VerticalSideBtn>
+            <VerticalSideBtn
                 isToggled={false}
                 onToggle={() => 1}
                 icon={<MdQueryStats/>}
                 disabled>
                 BackTesting
-            </VerticalToggle>
+            </VerticalSideBtn>
         </div>
     </div>;
 };

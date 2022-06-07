@@ -47,18 +47,18 @@ export default class BB extends Indicator {
         for (const interval of intervals) {
             samples.push(interval.close);
             if (samples.length <= n) {
-                mb.push({time: interval.time, price: null});
-                ub.push({time: interval.time, price: null});
-                lb.push({time: interval.time, price: null});
+                mb.push({time: interval.timestamp, price: null});
+                ub.push({time: interval.timestamp, price: null});
+                lb.push({time: interval.timestamp, price: null});
             } else {
                 samples.shift();
                 const average = samples.reduce((a, n) => a + n) / n;
                 const deviations = samples.map(n => (n - average) ^ 2);
                 const variance = deviations.reduce((a, n) => a + n) / n;
                 const sd = Math.sqrt(variance);
-                mb.push({time: interval.time, price: average});
-                ub.push({time: interval.time, price: average + k * sd});
-                lb.push({time: interval.time, price: average - k * sd});
+                mb.push({time: interval.timestamp, price: average});
+                ub.push({time: interval.timestamp, price: average + k * sd});
+                lb.push({time: interval.timestamp, price: average - k * sd});
             }
         }
 
