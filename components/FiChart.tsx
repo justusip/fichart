@@ -31,6 +31,15 @@ const FiChart = (props: {
         "1W": 30 * 24 * 60 * 60,
     };
     const timePerGrid: number = timesPerGrid[timeScale];
+    const valueDateFormats: { [key: string]: string } = {
+        "1M": "DD/MM/YYYY HH:mm:ss",
+        "5M": "DD/MM/YYYY HH:mm:ss",
+        "1H": "DD/MM/YYYY HH:mm:ss",
+        "4H": "DD/MM/YYYY HH:mm:ss",
+        "1D": "DD/MM/YYYY",
+        "1W": "DD/MM/YYYY",
+    };
+    const valueDateFormat: string = valueDateFormats[timeScale];
 
     const [indiPanelToggled, setIndiPanelToggled] = useState(true);
 
@@ -42,7 +51,8 @@ const FiChart = (props: {
             <ChartCanvas className={"flex-1 h-0"}
                          data={props.data}
                          timeStep={timeStep}
-                         timePerGrid={timePerGrid}/>
+                         timePerGrid={timePerGrid}
+                         valueDateFormat={valueDateFormat}/>
             <div className={"bg-[#262a30] flex gap border-t border-gray-500"}>
                 {
                     timeScales.map((p, i) => {

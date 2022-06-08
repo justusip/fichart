@@ -15,15 +15,15 @@ const useSlice = <T>(name: string, initialVal: T) =>
         },
     });
 
-const scale = useSlice("scale", "1D");
-export const setScale = scale.actions.set;
+// const scale = useSlice("scale", "1D");
+// export const setScale = scale.actions.set;
 
 const indicators = useSlice<IndicatorData[]>("indicators", [
     {
         id: uuidv4(),
         name: "Simple Moving Average",
         options: {
-            colour: "#ffff00",
+            colour: "#ff8800",
             width: 7
         }
     },
@@ -31,16 +31,8 @@ const indicators = useSlice<IndicatorData[]>("indicators", [
         id: uuidv4(),
         name: "Simple Moving Average",
         options: {
-            colour: "#ff8800",
-            width: 14
-        }
-    },
-    {
-        id: uuidv4(),
-        name: "Simple Moving Average",
-        options: {
             colour: "#ff4400",
-            width: 21
+            width: 14
         }
     },
     {
@@ -64,7 +56,7 @@ const indicators = useSlice<IndicatorData[]>("indicators", [
 export const setIndicators = indicators.actions.set;
 
 export default {
-    scale: scale.reducer,
+    // scale: scale.reducer,
     indicators: indicators.reducer
 };
 
