@@ -3,7 +3,7 @@ import {v4 as uuidv4} from "uuid";
 import Interval from "../misc/Interval";
 import Option from "./Option";
 import React from "react";
-import IndicatorData from "./IndicatorData";
+import IndicatorData from "./AddedIndicator";
 import Context from "./Context";
 
 export default abstract class Indicator {

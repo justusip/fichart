@@ -1,6 +1,6 @@
 import {createSlice} from "@reduxjs/toolkit";
 import {v4 as uuidv4} from "uuid";
-import IndicatorData from "../indicators/IndicatorData";
+import IndicatorData from "../indicators/AddedIndicator";
 
 const useSlice = <T>(name: string, initialVal: T) =>
     createSlice({

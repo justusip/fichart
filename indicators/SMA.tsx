@@ -36,12 +36,12 @@ export default class SMA extends Indicator {
         let samples: number[] = [];
         let data = [];
         for (const interval of intervals) {
-            samples.push(interval.close);
+            samples.push(interval.c);
             if (samples.length <= width) {
-                data.push({time: interval.timestamp, price: null});
+                data.push({time: interval.t, price: null});
             } else {
                 samples.shift();
-                data.push({time: interval.timestamp, price: samples.reduce((a, n) => a + n) / width});
+                data.push({time: interval.t, price: samples.reduce((a, n) => a + n) / width});
 
             }
         }

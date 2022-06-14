@@ -6,7 +6,7 @@ import {Draggable} from "react-beautiful-dnd";
 import classNames from "classnames";
 import ColourField from "./fields/ColourField";
 import IntergerField from "./fields/IntergerField";
-import IndicatorData from "../indicators/IndicatorData";
+import IndicatorData from "../indicators/AddedIndicator";
 import allIndicators from "../indicators/AllIndicators";
 
 export default (props: { index: number, indiData: IndicatorData }) => {

@@ -5,70 +5,93 @@ import {useEffect, useState} from "react";
 import {MdQueryStats, MdStackedLineChart} from "react-icons/md";
 import VerticalSideBtn from "../components/VerticalToggle";
 import IndicatorPanel from "../components/IndicatorPanel";
-import DefinedIntervals from "../misc/DefinedIntervals";
+import {TimeScale} from "../misc/TimeScale";
+import moment from "moment";
 
 const FiChart = (props: {
     classNames?: string,
     data: Interval[],
-    timeScales?: string[],
-    onTimeScaleChange?: (precision: string) => void
+    onTimeScaleChange?: (precision: string) => void,
+    onTimeBoundsChange?: (boundLeft: number, boundRight: number) => void
 }) => {
     const [ready, setReady] = useState(false);
     useEffect(() => {
         setReady(true);
     }, []);
 
-    const timeScales = props.timeScales || ["1M", "5M", "1H", "1D", "1W"];
-    const [timeScale, setTimeScale] = useState("1D");
-    const timeStep = DefinedIntervals[timeScale];
-
-    const timesPerGrid: { [key: string]: number } = {
-        "1M": 60 * 60,
-        "5M": 60 * 60,
-        "1H": 24 * 60 * 60,
-        "4H": 24 * 60 * 60,
-        "1D": 7 * 24 * 60 * 60,
-        "1W": 30 * 24 * 60 * 60,
-    };
-    const timePerGrid: number = timesPerGrid[timeScale];
-    const valueDateFormats: { [key: string]: string } = {
-        "1M": "DD/MM/YYYY HH:mm:ss",
-        "5M": "DD/MM/YYYY HH:mm:ss",
-        "1H": "DD/MM/YYYY HH:mm:ss",
-        "4H": "DD/MM/YYYY HH:mm:ss",
-        "1D": "DD/MM/YYYY",
-        "1W": "DD/MM/YYYY",
-    };
-    const valueDateFormat: string = valueDateFormats[timeScale];
+    const SECOND = 1;
+    const MINUTE = 60 * SECOND;
+    const HOUR = 60 * MINUTE;
+    const DAY = 24 * HOUR;
+    const WEEK = 7 * DAY;
+    const MONTH = 30 * DAY;
+    const timeScales: TimeScale[] = [
+        {
+            name: "1M",
+            timeStep: MINUTE,
+            gridStep: 10 * MINUTE,
+            displayFormat: "DD/MM/YYYY HH:mm:ss"
+        },
+        {
+            name: "5M",
+            timeStep: 5 * MINUTE,
+            gridStep: 60 * MINUTE,
+            displayFormat: "DD/MM/YYYY HH:mm:ss"
+        },
+        {
+            name: "1H",
+            timeStep: HOUR,
+            gridStep: 12 * HOUR,
+            displayFormat: "DD/MM/YYYY HH:mm:ss"
+        },
+        {
+            name: "1D",
+            timeStep: DAY,
+            gridStep: WEEK,
+            displayFormat: "DD/MM/YYYY (ddd)",
+            isGridStep: (time: number) => moment.unix(time).isoWeekday() == 7
+        },
+        {
+            name: "1W",
+            timeStep: WEEK,
+            gridStep: MONTH,
+            displayFormat: "DD/MM/YYYY (ddd)"
+        }
+    ];
+    const [timeScale, setTimeScale] = useState(timeScales.find(o => o.name === "1D"));
 
     const [indiPanelToggled, setIndiPanelToggled] = useState(true);
 
     return ready && <div className={cx(props.classNames, "flex text-white")}>
         <div className={"bg-[#262a30] flex-1 flex flex-col"}>
             <div className={"px-4 py-2 text-xs border-b border-gray-700"}>
-                FiChart Demo
+                <div className={"text-sm"}>NYSE/SPY</div>
+                SPDR S&P 500 ETF Trust
             </div>
             <ChartCanvas className={"flex-1 h-0"}
                          data={props.data}
-                         timeStep={timeStep}
-                         timePerGrid={timePerGrid}
-                         valueDateFormat={valueDateFormat}/>
+                         timeStep={timeScale.timeStep}
+                         gridTimeStep={timeScale.gridStep}
+                         valueDateFormat={timeScale.displayFormat}
+                         timeScale={timeScale}
+                         {...props}/>
             <div className={"bg-[#262a30] flex gap border-t border-gray-500"}>
                 {
-                    timeScales.map((p, i) => {
-                        const disabled = p !== timeScales[0];
+                    timeScales.map((s, i) => {
+                        const disabled = i !== 3;
+                        const selected = timeScale.name === s.name;
                         return <div key={i}
                                     className={cx(
                                         "text-xs py-2 px-4",
-                                        {"cursor-pointer bg-gray-900": !disabled && timeScale === p},
-                                        {"hover:bg-gray-700 active:bg-gray-900": !disabled && timeScale !== p},
-                                        {"cursor-not-allowed text-neutral-500": disabled}
+                                        {"cursor-pointer bg-gray-900": !disabled && selected},
+                                        {"hover:bg-gray-700 active:bg-gray-900": !disabled && !selected},
+                                        {"cursor-not-allowed text-neutral-500": disabled || selected}
                                     )}
                                     onClick={() => {
                                         if (!disabled)
-                                            timeScale && setTimeScale(p);
+                                            timeScale && setTimeScale(s);
                                     }}
-                        >{p}</div>;
+                        >{s.name}</div>;
                     })
                 }
                 {

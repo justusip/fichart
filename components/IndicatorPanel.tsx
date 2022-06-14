@@ -5,7 +5,7 @@ import {setIndicators} from "../misc/Slices";
 import {DropResult} from "react-beautiful-dnd";
 import {_DragDropContext, _Droppable} from "./ImportNoSSR";
 import IndicatorAdd from "./IndicatorAdd";
-import IndicatorData from "../indicators/IndicatorData";
+import IndicatorData from "../indicators/AddedIndicator";
 import IndicatorPanelItem from "./IndicatorPanelItem";
 
 export default (props: {}) => {
