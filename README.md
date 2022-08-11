@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="fichart.png" alt="logo"/>
+    <img src="docs/logo.png" alt="logo"/>
 </p>
 <h1 align="center">FiChart</h1>
 <div align="center">
@@ -7,7 +7,7 @@ A clean, lightweight, responsive, and extensible React financial chart library o
 
 ---
 
-<img src="screenshot.png" alt="logo"/>
+<img src="docs/screenshot-01.png" alt="logo"/>
 
 [Working Demo](https://fichart.vercel.app)
 
