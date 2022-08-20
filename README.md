@@ -3,7 +3,7 @@
 </p>
 <h1 align="center">FiChart</h1>
 <div align="center">
-A clean, lightweight, responsive, and extensible React financial chart library optimized for high-frequency trading
+React financial chart library built completely from scratch, drawn pixel by pixel using HTML5 Canvas API.
 
 ---
 
