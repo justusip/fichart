@@ -1,15 +1,4 @@
-<p align="center">
-    <img src="docs/logo.png" alt="logo"/>
-</p>
-<h1 align="center">FiChart</h1>
-<div align="center">
-React financial chart library built completely from scratch, drawn pixel by pixel using HTML5 Canvas API.
-
----
-
 <img src="docs/screenshot-01.png" alt="logo"/>
-
-[Working Demo](https://fichart.vercel.app)
 
 </div>
 
