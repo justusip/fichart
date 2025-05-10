@@ -1,3 +1,5 @@
+# fichart
+
 <img src="docs/screenshot-01.png" alt="logo"/>
 
 </div>
